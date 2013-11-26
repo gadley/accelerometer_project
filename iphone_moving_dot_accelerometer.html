@@ -1,0 +1,132 @@
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+	* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+	html, body {
+    height:100%; width: 100%;
+}
+	#sphere{border: solid black 1px;}
+	</style>
+</head>
+<body>
+	<div id='accelerationx'></div>
+	<div id='accelerationy'></div>
+	<div id='accelerationz'></div>
+	<canvas id="sphere"></canvas>
+</body>
+<script>
+	var sphere = document.getElementById("sphere");
+	var accelerationx=document.getElementById("accelerationx");
+	var context=sphere.getContext('2d');
+	var radius=5;
+	sphere.width=sphere.parentNode.clientWidth;
+	sphere.height=sphere.parentNode.clientHeight;
+	var x=sphere.width/2;
+	var y=sphere.height/2;
+	var vector_x=0;
+	var vector_y=0;
+
+	var multiplier = 2;
+	var filter = 0.25;
+
+	// var time = new Date();
+	// var timestamp = time.getTime();
+	
+	console.log('Screen Resolution', document.documentElement.clientWidth, document.documentElement.clientHeight);
+
+	if (window.DeviceMotionEvent != undefined) {
+		window.ondevicemotion = function(e)
+		{
+			// var time = new Date();
+			// console.log('time took:', time.getTime()-timestamp);
+			// timestamp = time.getTime();
+			accelerate_x=e.acceleration.x;
+			accelerate_y=e.acceleration.y;
+			accelerate_z=e.acceleration.z;
+			// console.log(e.interval);
+			if(Math.abs(e.acceleration.x) < filter){
+				ax = 0;
+				vector_x = 0;
+			}
+			else
+			{
+				ax = e.acceleration.x;
+			}
+
+			if(Math.abs(e.acceleration.y) < filter){
+				ay = 0;
+				vector_y = 0;
+			}
+			else
+			{
+				ay = e.acceleration.y;
+			}
+
+			vector_x = vector_x+(ax)*multiplier;
+		    vector_y = vector_y+(ay)*multiplier; 
+		    // console.log(ax, ay);
+		}
+		function move()
+		{
+			x=parseInt(x-vector_x*multiplier);
+			y=parseInt(y+vector_y*multiplier);
+			// console.log(x,y);
+		}
+			
+		var stopInterval = setInterval( function() {
+			context.beginPath();
+			context.moveTo(x, y);
+			move();
+			testWalls();
+			context.strokeStyle="#0000FF";
+			context.lineWidth=5;
+			context.lineTo(x, y);
+			context.stroke();
+
+			aax=ax.toFixed(2);
+			aay=ay.toFixed(2);
+			aaz=accelerate_z.toFixed(2);
+			aax=parseFloat(aax);
+			aay=parseFloat(aay);
+			aaz=parseFloat(aaz);
+			
+			accelerationx.innerHTML=aax;
+			accelerationy.innerHTML=aay;
+			accelerationz.innerHTML=aaz;
+			sphere.style.top = y + "px";
+			sphere.style.left = x + "px";
+		}, 50);
+
+		function testWalls()
+		{
+			var el = document.documentElement;
+
+			if (x<0)
+			{
+				x=0;
+			}
+			else if (x>el.clientWidth-radius)
+			{
+				x=el.clientWidth-radius;
+			}
+			if (y>el.clientHeight-radius)
+			{
+				y=el.clientHeight-radius;
+			}
+			else if (y<0)
+			{
+				y=0;
+			}
+		}
+		sphere.onclick=function()
+		{
+			clearInterval(stopInterval);
+		}
+	}
+</script>
+</html>
